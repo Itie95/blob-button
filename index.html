@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Get in Touch Blob</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+  /* Layout: one quiet stage, button dead centre at Figma's 1:1 size, a small control row underneath. */
+  :root {
+    --bg: #f4f4f3;
+    --fg: #18181a;
+    --muted: #7a7a7f;
+    --btn: #0a0a0a;
+    --btn-fg: #ffffff;
+    --font-ui: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    --travel: 72px; /* how far the circle detaches; mirrored in JS */
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121213; --fg: #ececec; --muted: #8d8d92;
+      --btn: #f2f2f0; --btn-fg: #0a0a0a; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121213; --fg: #ececec; --muted: #8d8d92;
+    --btn: #f2f2f0; --btn-fg: #0a0a0a; color-scheme: dark;
+  }
+
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-ui);
+    display: grid;
+    place-items: center;
+    padding-block: 32px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    box-sizing: border-box;
+  }
+  .wrap { display: grid; justify-items: center; gap: 56px; }
+
+  /* ---------- the button ---------- */
+  .blob {
+    position: relative;
+    width: 179px;
+    height: 60px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font: 500 16px/20px var(--font-ui);
+    color: var(--btn-fg);
+    -webkit-tap-highlight-color: transparent;
+    /* Shift left by half the travel so the opened state stays centred. */
+    transform: translateX(calc(var(--travel) / -2));
+  }
+  /* Keep the hover alive while the circle is out past the pill. */
+  .blob::after {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0; left: 100%;
+    width: 0;
+  }
+  .blob.active::after { width: calc(var(--travel) + 4px); }
+  .blob:focus-visible { outline: none; }
+  .blob:focus-visible .ring { opacity: 1; }
+
+  /* Two shapes only: the pill and the circle, joined by a curved bridge while they touch. */
+  .shapes {
+    position: absolute;
+    left: 0; top: 0;
+    overflow: visible;
+    pointer-events: none;
+    fill: var(--btn);
+  }
+
+  .label {
+    position: absolute;
+    left: 33px; top: 20px;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+    pointer-events: none;
+  }
+
+  /* Icons ride on top of the circle. */
+  .face {
+    position: absolute;
+    left: 114px; top: 0;
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    pointer-events: none;
+    will-change: transform;
+  }
+  .face svg { position: absolute; left: 50%; top: 50%; }
+  .icon { width: 20px; height: 16px; margin: -8px 0 0 -10px; overflow: visible; }
+
+  .ring {
+    position: absolute;
+    inset: -5px;
+    border-radius: 999px;
+    border: 2px solid var(--muted);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ---------- controls ---------- */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 20px;
+    font: 400 12px/1.4 var(--font-mono);
+    color: var(--muted);
+    letter-spacing: .02em;
+  }
+  .controls label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+  .controls input { accent-color: var(--fg); margin: 0; }
+  .hint { text-align: center; font: 400 13px/1.5 var(--font-ui); color: var(--muted); }
+</style>
+</head>
+<body>
+
+<main class="wrap">
+  <button class="blob" id="blob" type="button" aria-label="Get in touch by email">
+    <svg class="shapes" width="179" height="60" aria-hidden="true">
+      <rect class="pill" x="0" y="0" width="179" height="60" rx="30"/>
+      <path class="bridge" d=""/>
+      <ellipse class="ball" cx="144" cy="30" rx="30" ry="30"/>
+    </svg>
+    <span class="label">Get in touch</span>
+    <span class="face" aria-hidden="true">
+      <svg class="icon" viewBox="0 0 20 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path class="box" d="M10 1H19V15H1V1Z" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+        <path class="flap" d="M2 1.5L10 9.5L18 1.5"/>
+      </svg>
+    </span>
+    <span class="ring"></span>
+  </button>
+
+  <div class="controls">
+    <label for="slow"><input type="checkbox" id="slow"> Slow motion (4×)</label>
+    <label for="hold"><input type="checkbox" id="hold"> Hold open</label>
+  </div>
+  <p class="hint">Hover the button. On touch screens, tap it.</p>
+</main>
+
+<script>
+(() => {
+  const TRAVEL = 72;
+  const R = 30, CY = 30;               // circle radius; vertical centre
+  const BALL_CX = 144;                 // circle centre at rest
+  const PILL_W = 179, PILL_MIN = 150;  // pill width at rest, and once the circle's volume has left
+  const SPREAD = 26;                   // edge-to-edge gap at which the bridge pinches off
+
+  const blob = document.getElementById('blob');
+  const slow = document.getElementById('slow');
+  const hold = document.getElementById('hold');
+  const face = blob.querySelector('.face');
+  const icon = blob.querySelector('.icon');
+  const box = blob.querySelector('.box');
+  const flap = blob.querySelector('.flap');
+  const ball = blob.querySelector('.ball');
+  const pill = blob.querySelector('.pill');
+  const bridge = blob.querySelector('.bridge');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+
+  // A damped spring: stiffness k, damping c. Low damping = more overshoot and wobble.
+  const spring = (k, c) => ({ x: 0, v: 0, k, c });
+  const step = (s, target, dt) => {
+    s.v += ((target - s.x) * s.k - s.v * s.c) * dt;
+    s.x += s.v * dt;
+  };
+
+  const sBall = spring(95, 11);
+  const sPill = spring(140, 9);    // pill width loss
+  const sRipple = spring(330, 6);  // ripple through the pill after the snap
+  const sMorph = spring(90, 16);   // arrow (0) to envelope (1)
+  let arrived = false;
+
+  // The arrow IS the envelope flap turned on its side: same V, same 45° arms.
+  // It swings down into place, then the envelope's outline draws around it.
+  const FLAP_TIP = [10, 9.5];
+  const ARROW_TIP = [13.25, 8], ARROW_SCALE = 0.8;
+  sPill.x = PILL_W;
+  let jelly = 0;                   // wobble energy on the circle after it breaks free
+  let joined = true;
+  let t = 0;
+
+  let hovered = false, focused = false;
+  const open = () => hovered || focused || hold.checked;
+
+  blob.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') hovered = true; });
+  blob.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') hovered = false; });
+  blob.addEventListener('focus', () => { focused = blob.matches(':focus-visible'); });
+  blob.addEventListener('blur', () => { focused = false; });
+  // Touch has no hover, so a tap toggles the open state instead.
+  blob.addEventListener('pointerup', (e) => { if (e.pointerType !== 'mouse') hold.checked = !hold.checked; });
+
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const smooth = (v) => v * v * (3 - 2 * v);
+  const at = (cx, cy, a, r) => [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
+
+  // Membrane between two circles: each side leaves one circle on its tangent, dips to a
+  // rounded waist midway, and enters the other circle on its tangent. The waist tapers
+  // smoothly with the gap and closes to nothing exactly at SPREAD, so they part cleanly.
+  const NECK = 4.5;                 // the thinnest the neck gets before it lets go
+  // r2 is the circle's nominal radius (sets when it breaks); rx2/ry2 its current, stretched outline.
+  function metaball(x1, r1, x2, r2, rx2 = r2, ry2 = r2) {
+    const d = x2 - x1;
+    const maxD = r1 + r2 + SPREAD;
+    if (d <= 1 || d >= maxD) return '';
+    const g = (d - r1 - r2) / SPREAD;                    // < 0 while overlapping, 1 at the break
+    const u1 = d < r1 + r2 ? Math.acos(clamp((r1 * r1 + d * d - r2 * r2) / (2 * r1 * d), -1, 1)) : 0;
+    const u2 = d < r1 + r2 ? Math.acos(clamp((r2 * r2 + d * d - r1 * r1) / (2 * r2 * d), -1, 1)) : 0;
+    const base = 1.15 - 0.55 * Math.sqrt(clamp(g));      // where the membrane meets each circle
+    const a1 = Math.max(base, u1 + 0.25), a2 = Math.max(base, u2 + 0.25);
+    // Deep overlap: the shapes are already one mass, and attaching past the top of either
+    // round end would poke out of the silhouette. The bridge stays hidden inside until here.
+    if (a1 > 1.35 || a2 > 1.35) return '';
+    // Waist starts close to the height of the join (no notch on first contact), thins smoothly,
+    // holds as a soft neck, then lets go at the very end.
+    const gc = clamp(g);
+    const full = 2 * Math.min(r1 * Math.sin(a1), ry2 * Math.sin(a2)) * 0.8;
+    const w = NECK * (1 - smooth(clamp((gc - 0.88) / 0.12)))
+            + (full - NECK) * Math.pow(1 - gc, 1.6);
+    const f = (x, y) => x.toFixed(2) + ' ' + y.toFixed(2);
+
+    const side = (s) => {                                 // s = -1 top edge, +1 bottom edge
+      const p1 = [x1 + r1 * Math.cos(a1), CY + s * r1 * Math.sin(a1)];
+      const p3 = [x2 - rx2 * Math.cos(a2), CY + s * ry2 * Math.sin(a2)];
+      const m = [(p1[0] + p3[0]) / 2, CY + s * w / 2];
+      const l1 = Math.hypot(m[0] - p1[0], m[1] - p1[1]) * 0.62;
+      const l3 = Math.hypot(p3[0] - m[0], p3[1] - m[1]) * 0.62;
+      const lm = Math.max(0, (p3[0] - p1[0]) / 2) * 0.3;
+      // Circle tangents at the attach points, heading across the gap.
+      const c1 = [p1[0] + Math.sin(a1) * l1, p1[1] - s * Math.cos(a1) * l1];
+      const tx = rx2 * Math.sin(a2), ty = ry2 * Math.cos(a2), tl = Math.hypot(tx, ty);
+      const c4 = [p3[0] - (tx / tl) * l3, p3[1] - s * (ty / tl) * l3];
+      return { p1, p3, m, c1, c2: [m[0] - lm, m[1]], c3: [m[0] + lm, m[1]], c4 };
+    };
+    const T = side(-1), B = side(1);
+    return `M${f(...T.p1)} C${f(...T.c1)} ${f(...T.c2)} ${f(...T.m)} C${f(...T.c3)} ${f(...T.c4)} ${f(...T.p3)}` +
+           ` L${f(...B.p3)} C${f(...B.c4)} ${f(...B.c3)} ${f(...B.m)} C${f(...B.c2)} ${f(...B.c1)} ${f(...B.p1)} Z`;
+  }
+
+  let last = performance.now();
+  function frame(now) {
+    let dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    if (slow.checked) dt *= 0.25;
+    t += dt;
+
+    const isOpen = open();
+    const target = isOpen ? TRAVEL : 0;
+    blob.classList.toggle('active', isOpen);
+
+    // The arrow turns into the envelope only once the circle has reached its spot.
+    if (!isOpen) arrived = false;
+    else if (sBall.x > TRAVEL * 0.95) arrived = true;
+
+    if (reduce.matches) {
+      sBall.x = target; sBall.v = 0;
+      sMorph.x = isOpen ? 1 : 0;
+      sPill.x = isOpen ? PILL_MIN : PILL_W;
+      sRipple.x = 0; jelly = 0;
+    } else {
+      const n = 4, h = dt / n;
+      for (let i = 0; i < n; i++) {
+        step(sBall, target, h);
+        step(sMorph, arrived ? 1 : 0, h);
+        // The pill gives up the circle's volume as it pulls away.
+        step(sPill, PILL_W - (PILL_W - PILL_MIN) * smooth(clamp(sBall.x / 60)), h);
+        step(sRipple, 0, h);
+      }
+    }
+
+    // Pill: shrinks as volume leaves, then ripples (width and a slight vertical swell).
+    const pw = sPill.x + sRipple.x;
+    const ph = 60 * (1 - sRipple.x * 0.008);
+    pill.setAttribute('width', pw.toFixed(2));
+    pill.setAttribute('height', ph.toFixed(2));
+    pill.setAttribute('y', (CY - ph / 2).toFixed(2));
+    pill.setAttribute('rx', (ph / 2).toFixed(2));
+
+    // Circle: squash and stretch with speed, then a short jelly wobble once free.
+    const bx = BALL_CX + sBall.x;
+    const speed = Math.abs(sBall.v);
+    // Squash only as it comes free: while merged it must match the pill's height, or its top dips and leaves a step.
+    const free = smooth(clamp((bx - (pw - ph / 2) - ph / 2 - R) / SPREAD));
+    const stretch = 1 + Math.min(0.12, speed * 0.00025) * free;
+    jelly *= Math.exp(-dt * 3);
+    const wob = jelly * 0.06 * Math.sin(t * 22);
+    const rx = R * stretch * (1 + wob), ry = R / stretch * (1 - wob);
+    ball.setAttribute('cx', bx.toFixed(2));
+    ball.setAttribute('rx', rx.toFixed(2));
+    ball.setAttribute('ry', ry.toFixed(2));
+
+    // Bridge between the pill's round end and the circle, attached to the circle's real outline.
+    const capX = pw - ph / 2;
+    const d = bx - capX;
+    const path = metaball(capX, ph / 2, bx, R, rx, ry);
+    bridge.setAttribute('d', path);
+
+    // The snap: the waist pinches to nothing, the pill recoils with a ripple and the circle wobbles once.
+    if (joined && !path && d > 2 * R && !reduce.matches) {
+      joined = false;
+      sRipple.v -= 90;
+      jelly = 1;
+    }
+    if (!joined && path) joined = true;
+
+    // Icon rides with the circle, then morphs from arrow to envelope with a small pop.
+    face.style.transform = `translateX(${sBall.x}px)`;
+    const m = clamp(sMorph.x);
+    // Phase 1: the arrow swings 90° down and settles as the flap.
+    const q = smooth(clamp(m / 0.6));
+    const tipX = ARROW_TIP[0] + (FLAP_TIP[0] - ARROW_TIP[0]) * q;
+    const tipY = ARROW_TIP[1] + (FLAP_TIP[1] - ARROW_TIP[1]) * q;
+    const sc = ARROW_SCALE + (1 - ARROW_SCALE) * q;
+    flap.setAttribute('transform', `translate(${tipX.toFixed(2)} ${tipY.toFixed(2)}) rotate(${(-90 * (1 - q)).toFixed(2)}) scale(${sc.toFixed(3)}) translate(${-FLAP_TIP[0]} ${-FLAP_TIP[1]})`);
+    // Phase 2: the envelope outline draws in around the flap, starting from the top centre.
+    const draw = smooth(clamp((m - 0.35) / 0.65));
+    box.setAttribute('stroke-dashoffset', (1 - draw).toFixed(3));
+    // Round caps leave a dot or stub at short lengths, so the outline fades in as it starts drawing.
+    box.setAttribute('opacity', smooth(clamp(draw / 0.25)).toFixed(3));
+    icon.style.transform = `scale(${(1 + 0.14 * Math.sin(Math.PI * m)).toFixed(3)})`;
+
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+
+</body>
+</html>
